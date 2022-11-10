@@ -1,11 +1,17 @@
 import config from '../config.json'
+import React from 'react';
 import styled from 'styled-components'
-import Menu from '../src/components/Menu'
+import Menu from '../src/components/Menu/Menu'
 import { CSSReset } from '../src/components/CSSReset'
 import { StyledTimeline } from '../src/components/Timeline'
 import { FavoritesContainer } from '../src/components/Favorites'
+import { useState } from 'react'
 
 function HomePage() {
+
+    const [valorDoFiltro, setValorDoFiltro] = useState("");
+
+
     return (
         <>
             <CSSReset />
@@ -14,9 +20,9 @@ function HomePage() {
                 flexDirection: "column",
                 flex: 1,
             }}>
-                <Menu />
+                <Menu valorDoFiltro={valorDoFiltro} setValorDoFiltro={setValorDoFiltro} />
                 <Header />
-                <Timeline playlists={config.playlists} />
+                <Timeline searchValue={valorDoFiltro} playlists={config.playlists} />
                 <Favorites favoritesList={config.favorites} />
             </div>
         </>
@@ -34,8 +40,8 @@ const StyledHeader = styled.div`
     }
 
     .header-banner{
-        height: 40vh;
-        background-image: url("https://images.unsplash.com/photo-1543536448-d209d2d13a1c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80");
+        height: 230px;
+        background-image: url(${config.bg});
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;
@@ -73,7 +79,7 @@ function Header() {
     )
 }
 
-function Timeline(propriedades) {
+function Timeline({ searchValue, ...propriedades }) {
 
     // console.log(propriedades.playlists);
 
@@ -84,19 +90,25 @@ function Timeline(propriedades) {
             {playlistNames.map((playlistName) => {
                 const videos = propriedades.playlists[playlistName];
                 return (
-                    <section>
+                    <section key={playlistName}>
                         <h2>{playlistName}</h2>
                         <div>
-                            {videos.map((video) => {
-                                return (
-                                    <a href={video.url}>
-                                        <img src={video.thumb} />
-                                        <span>
-                                            {video.title}
-                                        </span>
-                                    </a>
-                                )
-                            })}
+                            {videos
+                                .filter((video) => {
+                                    const titleNormalized = video.title.toLowerCase();
+                                    const searchValueNormalized = searchValue.toLowerCase();
+                                    return titleNormalized.includes(searchValueNormalized)
+                                })
+                                .map((video) => {
+                                    return (
+                                        <a key={video.url} href={video.url}>
+                                            <img src={video.thumb} />
+                                            <span>
+                                                {video.title}
+                                            </span>
+                                        </a>
+                                    )
+                                })}
                         </div>
 
                     </section>
@@ -115,12 +127,12 @@ function Favorites(propriedades) {
             {favoritesList.map((favoritesItem) => {
                 const chanels = propriedades.favoritesList[favoritesItem];
                 return (
-                    <section>
+                    <section key={favoritesItem}>
                         <h2>Aluratubes Favoritos</h2>
                         <div>
                             {chanels.map((chanel) => {
                                 return (
-                                    <a href={chanel.url}>
+                                    <a key={chanel.url} href={chanel.url}>
                                         <img src={chanel.avatar} />
                                         <span>
                                             {chanel.title}
